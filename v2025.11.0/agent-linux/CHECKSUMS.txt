@@ -1,0 +1,5 @@
+# SecuryBlack Agent v2025.11.0
+# SHA256 Checksums
+
+e0afc802f55244a19509596b331ba1df35bf41ab481c1f70e5af5de4ef6a5485  securyblack-agent-linux-x64
+6273fdbefe18ded7268558ea562e4814f71c62afbb0eb5b7ae71b22463311f8b  securyblack-agent-linux-arm64

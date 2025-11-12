@@ -1,0 +1,47 @@
+SecuryBlack Agent - Release v2025.11.0
+Generated: 2025-11-12 16:09:09 UTC
+
+FILES TO UPLOAD TO GITHUB RELEASE:
+-----------------------------------
+?? Location: D:\source\ReleaseSB\v2025.11.0\agent-linux
+
+? install.sh
+? uninstall.sh
+? post-install.sh (opcional)
+? securyblack-agent.service
+? securyblack-agent-linux-x64
+? securyblack-agent-linux-x64.sha256
+? securyblack-agent-linux-arm64
+? securyblack-agent-linux-arm64.sha256
+? CHECKSUMS.txt
+? README.md
+? RELEASE_NOTES.md
+
+CHECKSUMS:
+----------
+e0afc802f55244a19509596b331ba1df35bf41ab481c1f70e5af5de4ef6a5485  securyblack-agent-linux-x64
+6273fdbefe18ded7268558ea562e4814f71c62afbb0eb5b7ae71b22463311f8b  securyblack-agent-linux-arm64
+
+SIZE:
+-----
+securyblack-agent-linux-x64:    19.19 MB
+securyblack-agent-linux-arm64:  18.68 MB
+
+NEXT STEPS:
+-----------
+1. Revisa y edita RELEASE_NOTES.md con los cambios de esta versi�n
+2. Ve a GitHub: https://github.com/SecuryBlack/agent-releases/releases/new
+3. Tag: v2025.11.0
+4. Title: SecuryBlack Agent v2025.11.0
+5. Sube TODOS los archivos desde: D:\source\ReleaseSB\v2025.11.0\agent-linux
+6. Copia el contenido de RELEASE_NOTES.md en la descripci�n
+7. Marca como "Latest release" si es estable
+8. Publica la release
+
+O usa GitHub CLI:
+cd "D:\source\ReleaseSB\v2025.11.0\agent-linux"
+gh release create v2025.11.0 * 
+  --repo SecuryBlack/agent-releases 
+  --title "SecuryBlack Agent v2025.11.0" 
+  --notes-file RELEASE_NOTES.md 
+  --latest

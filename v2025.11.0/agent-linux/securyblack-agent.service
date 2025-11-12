@@ -1,0 +1,51 @@
+[Unit]
+Description=SecuryBlack Monitoring Agent
+Documentation=https://docs.securyblack.com
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=notify
+ExecStart=/opt/securyblack-agent/securyblack-agent
+WorkingDirectory=/opt/securyblack-agent
+Environment="DOTNET_ENVIRONMENT=Production"
+Environment="ASPNETCORE_URLS="
+Restart=always
+RestartSec=10
+User=securyblack
+Group=securyblack
+
+# Configuración de logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=securyblack-agent
+
+# Seguridad
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/etc/securyblack-agent /var/log/securyblack-agent
+
+# Limitar syscalls peligrosas
+SystemCallFilter=@system-service
+SystemCallErrorNumber=EPERM
+
+# Protección adicional
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictRealtime=true
+RestrictNamespaces=true
+
+# Recursos
+LimitNOFILE=65535
+LimitNPROC=512
+TasksMax=4096
+
+# Timeouts
+TimeoutStartSec=30
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

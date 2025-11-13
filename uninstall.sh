@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # SecuryBlack Agent - Script de Desinstalación
 # Uso: curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/uninstall.sh | sudo bash
@@ -8,7 +8,7 @@ set -e
 # Colores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YIDDEN='\033[1;33m'
+YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
@@ -57,8 +57,8 @@ check_root() {
 # Confirmar desinstalación
 confirm_uninstall() {
     echo ""
-    echo -e "${YELLOW}¿Estás seguro de que deseas desinstalar SecuryBlack Agent? [y/N]:${NC} "
-    read -r REPLY
+    echo -ne "${YELLOW}¿Estás seguro de que deseas desinstalar SecuryBlack Agent? [y/N]: ${NC}"
+    read -r REPLY </dev/tty
     echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
         log_info "Desinstalación cancelada"
@@ -110,8 +110,8 @@ remove_files() {
     
     # Preguntar si desea conservar los logs
     echo ""
-    echo -e "${YELLOW}¿Deseas conservar los logs? [y/N]:${NC} "
-    read -r KEEP_LOGS
+    echo -ne "${YELLOW}¿Deseas conservar los logs? [y/N]: ${NC}"
+    read -r KEEP_LOGS </dev/tty
     echo ""
     
     # Eliminar directorio de instalación

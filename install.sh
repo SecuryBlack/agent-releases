@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # SecuryBlack Agent - Script de Instalación
 # Inspirado en Tailscale: https://tailscale.com/install
@@ -179,7 +179,8 @@ check_existing_installation() {
     if [ -f "$BIN_PATH" ]; then
         log_warning "SecuryBlack Agent ya está instalado"
         echo ""
-        read -p "¿Deseas reinstalar/actualizar? [y/N]: " -n 1 -r
+        echo -ne "¿Deseas reinstalar/actualizar? [y/N]: "
+        read -r REPLY </dev/tty
         echo ""
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
             log_info "Instalación cancelada por el usuario"
@@ -289,7 +290,8 @@ create_config() {
     # Si ya existe configuración, preguntar si preservar
     if [ -f "${CONFIG_DIR}/appsettings.json" ]; then
         log_warning "Ya existe un archivo de configuración"
-        read -p "¿Deseas preservar la configuración existente? [Y/n]: " -n 1 -r
+        echo -ne "¿Deseas preservar la configuración existente? [Y/n]: "
+        read -r REPLY </dev/tty
         echo ""
         if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
             log_info "Preservando configuración existente"
@@ -304,7 +306,9 @@ create_config() {
     echo -e "${YELLOW}║  Obtén la desde: dashboard.securyblack.com       ║${NC}"
     echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
     echo ""
-    read -p "Ingresa tu Company Key (formato: comp_xxxxx): " COMPANY_KEY
+    echo -ne "Ingresa tu Company Key (formato: comp_xxxxx): "
+    read -r COMPANY_KEY </dev/tty
+    echo ""
     
     if [ -z "$COMPANY_KEY" ]; then
         log_warning "No se proporcionó Company Key"

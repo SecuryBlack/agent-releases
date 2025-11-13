@@ -1,13 +1,13 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# SecuryBlack Agent - Script de Instalaci�n
+# SecuryBlack Agent - Script de Instalación
 # Inspirado en Tailscale: https://tailscale.com/install
 # Uso: curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/install.sh | sudo bash
 
 set -e
 
 # Manejo de errores
-trap 'error_exit "Error en l�nea $LINENO. C�digo de salida: $?"' ERR
+trap 'error_exit "Error en línea $LINENO. Código de salida: $?"' ERR
 
 # Colores para output
 RED='\033[0;31m'
@@ -17,7 +17,7 @@ BLUE='\033[0;34m'
 MAGENTA='\033[0;35m'
 NC='\033[0m' # No Color
 
-# Configuraci�n
+# Configuración
 AGENT_NAME="securyblack-agent"
 INSTALL_DIR="/opt/${AGENT_NAME}"
 CONFIG_DIR="/etc/${AGENT_NAME}"
@@ -40,26 +40,26 @@ log_info() {
 }
 
 log_success() {
-  echo -e "${GREEN}[?]${NC} $1" | tee -a "$INSTALL_LOG"
+    echo -e "${GREEN}[✓]${NC} $1" | tee -a "$INSTALL_LOG"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[?]${NC} $1" | tee -a "$INSTALL_LOG"
+    echo -e "${YELLOW}[⚠]${NC} $1" | tee -a "$INSTALL_LOG"
 }
 
 log_error() {
-    echo -e "${RED}[?]${NC} $1" | tee -a "$INSTALL_LOG"
+    echo -e "${RED}[✗]${NC} $1" | tee -a "$INSTALL_LOG"
 }
 
 log_step() {
-echo -e "${MAGENTA}[STEP]${NC} $1" | tee -a "$INSTALL_LOG"
+    echo -e "${MAGENTA}[STEP]${NC} $1" | tee -a "$INSTALL_LOG"
 }
 
 # Manejo de errores
 error_exit() {
     log_error "$1"
-    log_error "Instalaci�n fallida. Ver log completo en: $INSTALL_LOG"
-    log_info "Para reportar el problema, env�a el log a support@securyblack.com"
+    log_error "Instalación fallida. Ver log completo en: $INSTALL_LOG"
+    log_info "Para reportar el problema, envía el log a support@securyblack.com"
     exit 1
 }
 
@@ -67,19 +67,19 @@ error_exit() {
 cleanup() {
     if [ -d "/tmp/securyblack" ]; then
         rm -rf /tmp/securyblack
-  fi
+    fi
 }
 trap cleanup EXIT
 
 # Banner
 print_banner() {
     echo "" | tee -a "$INSTALL_LOG"
-    echo -e "${BLUE}?????????????????????????????????????????????${NC}" | tee -a "$INSTALL_LOG"
-    echo -e "${BLUE}?    SecuryBlack Agent - Instalador        ?${NC}" | tee -a "$INSTALL_LOG"
-    echo -e "${BLUE}?    Version 1.0.0        ?${NC}" | tee -a "$INSTALL_LOG"
-    echo -e "${BLUE}?????????????????????????????????????????????${NC}" | tee -a "$INSTALL_LOG"
+    echo -e "${BLUE}═════════════════════════════════════════${NC}" | tee -a "$INSTALL_LOG"
+    echo -e "${BLUE}║    SecuryBlack Agent - Instalador        ║${NC}" | tee -a "$INSTALL_LOG"
+    echo -e "${BLUE}║    Version 1.0.0                         ║${NC}" | tee -a "$INSTALL_LOG"
+    echo -e "${BLUE}═════════════════════════════════════════${NC}" | tee -a "$INSTALL_LOG"
     echo "" | tee -a "$INSTALL_LOG"
-    log_info "Iniciando instalaci�n - $(date)"
+    log_info "Iniciando instalación - $(date)"
     log_info "Log guardado en: $INSTALL_LOG"
     echo ""
 }
@@ -93,27 +93,27 @@ check_root() {
     log_success "Ejecutando como root"
 }
 
-# Detectar distribuci�n Linux
+# Detectar distribución Linux
 detect_os() {
     log_step "Detectando sistema operativo..."
     if [ -f /etc/os-release ]; then
-    . /etc/os-release
+        . /etc/os-release
         OS=$ID
         OS_VERSION=$VERSION_ID
-        log_info "Distribuci�n detectada: $PRETTY_NAME"
+        log_info "Distribución detectada: $PRETTY_NAME"
         
-        # Verificar si es una distribuci�n soportada
-     case $OS in
-  ubuntu|debian|centos|rhel|fedora|rocky|almalinux)
-           log_success "Distribuci�n soportada: $OS"
-       ;;
+        # Verificar si es una distribución soportada
+        case $OS in
+            ubuntu|debian|centos|rhel|fedora|rocky|almalinux)
+                log_success "Distribución soportada: $OS"
+                ;;
             *)
- log_warning "Distribuci�n no oficialmente soportada: $OS"
-       log_warning "La instalaci�n continuar�, pero puede haber problemas"
-  ;;
- esac
+                log_warning "Distribución no oficialmente soportada: $OS"
+                log_warning "La instalación continuará, pero puede haber problemas"
+                ;;
+        esac
     else
-        error_exit "No se pudo detectar la distribuci�n Linux (/etc/os-release no encontrado)"
+        error_exit "No se pudo detectar la distribución Linux (/etc/os-release no encontrado)"
     fi
 }
 
@@ -123,16 +123,16 @@ detect_arch() {
     local MACHINE_ARCH=$(uname -m)
     case $MACHINE_ARCH in
         x86_64)
-          ARCH="x64"
+            ARCH="x64"
             log_success "Arquitectura detectada: x86_64 ($ARCH)"
             ;;
         aarch64|arm64)
-     ARCH="arm64"
+            ARCH="arm64"
             log_success "Arquitectura detectada: ARM64 ($ARCH)"
-      ;;
-*)
-      error_exit "Arquitectura no soportada: $MACHINE_ARCH (solo x64 y arm64 est�n soportados)"
-      ;;
+            ;;
+        *)
+            error_exit "Arquitectura no soportada: $MACHINE_ARCH (solo x64 y arm64 están soportados)"
+            ;;
     esac
 }
 
@@ -142,65 +142,65 @@ check_dependencies() {
     
     # Verificar systemd
     if ! command -v systemctl &> /dev/null; then
-        error_exit "systemd no est� disponible. Este instalador requiere systemd."
+        error_exit "systemd no está disponible. Este instalador requiere systemd."
     fi
-    log_info "? systemd disponible"
+    log_info "✓ systemd disponible"
     
     # Verificar curl
     if ! command -v curl &> /dev/null; then
-        log_warning "curl no est� instalado. Intentando instalar..."
-      if command -v apt-get &> /dev/null; then
-apt-get update -qq && apt-get install -y curl -qq
+        log_warning "curl no está instalado. Intentando instalar..."
+        if command -v apt-get &> /dev/null; then
+            apt-get update -qq && apt-get install -y curl -qq
         elif command -v yum &> /dev/null; then
             yum install -y curl -q
-elif command -v dnf &> /dev/null; then
-       dnf install -y curl -q
-      else
-   error_exit "No se pudo instalar curl autom�ticamente. Inst�lalo manualmente."
+        elif command -v dnf &> /dev/null; then
+            dnf install -y curl -q
+        else
+            error_exit "No se pudo instalar curl automáticamente. Instálalo manualmente."
         fi
         log_success "curl instalado exitosamente"
     else
-    log_info "? curl disponible"
+        log_info "✓ curl disponible"
     fi
     
     # Verificar conectividad a Internet
     if ! curl -s --max-time 5 https://api.github.com > /dev/null; then
-    error_exit "No hay conectividad a Internet. Verifica tu conexi�n."
+        error_exit "No hay conectividad a Internet. Verifica tu conexión."
     fi
-    log_info "? Conectividad a Internet OK"
+    log_info "✓ Conectividad a Internet OK"
     
     log_success "Todas las dependencias verificadas"
 }
 
-# Verificar si ya est� instalado
+# Verificar si ya está instalado
 check_existing_installation() {
-    log_step "Verificando instalaci�n existente..."
+    log_step "Verificando instalación existente..."
     
     if [ -f "$BIN_PATH" ]; then
-      log_warning "SecuryBlack Agent ya est� instalado"
+        log_warning "SecuryBlack Agent ya está instalado"
         echo ""
-        read -p "�Deseas reinstalar/actualizar? [y/N]: " -n 1 -r
-   echo ""
+        read -p "¿Deseas reinstalar/actualizar? [y/N]: " -n 1 -r
+        echo ""
         if [[ ! $REPLY =~ ^[Yy]$ ]]; then
- log_info "Instalaci�n cancelada por el usuario"
-    exit 0
+            log_info "Instalación cancelada por el usuario"
+            exit 0
         fi
-     log_info "Procediendo con reinstalaci�n..."
+        log_info "Procediendo con reinstalación..."
     else
-log_info "No se encontr� instalaci�n previa"
+        log_info "No se encontró instalación previa"
     fi
 }
 
 # Descargar binario desde GitHub Releases
 download_agent() {
-    log_step "Descargando �ltima versi�n del agente desde GitHub..."
+    log_step "Descargando última versión del agente desde GitHub..."
     
-    # Obtener informaci�n de la �ltima release
+    # Obtener información de la última release
     log_info "Consultando: $GITHUB_API"
     RELEASE_INFO=$(curl -sL "${GITHUB_API}") || error_exit "No se pudo conectar a GitHub API"
     
     if [ -z "$RELEASE_INFO" ]; then
-        error_exit "No se pudo obtener informaci�n de releases"
+        error_exit "No se pudo obtener información de releases"
     fi
     
     # Buscar el asset correcto para la arquitectura
@@ -208,29 +208,29 @@ download_agent() {
     DOWNLOAD_URL=$(echo "$RELEASE_INFO" | grep -o "\"browser_download_url\": \"[^\"]*${ASSET_NAME}[^\"]*\"" | cut -d'"' -f4 | head -n1)
     
     if [ -z "$DOWNLOAD_URL" ]; then
-     log_error "Assets disponibles:"
-   echo "$RELEASE_INFO" | grep "browser_download_url" | cut -d'"' -f4
-        error_exit "No se encontr� el binario para arquitectura: linux-${ARCH}"
+        log_error "Assets disponibles:"
+        echo "$RELEASE_INFO" | grep "browser_download_url" | cut -d'"' -f4
+        error_exit "No se encontró el binario para arquitectura: linux-${ARCH}"
     fi
     
     log_info "Descargando desde: $DOWNLOAD_URL"
     
     # Crear directorio temporal
     mkdir -p /tmp/securyblack
- 
+    
     # Descargar binario con barra de progreso
     if curl -L --progress-bar -o "/tmp/securyblack/${AGENT_NAME}" "$DOWNLOAD_URL"; then
         log_success "Binario descargado exitosamente"
     else
         error_exit "Error al descargar el binario"
-  fi
+    fi
     
-    # Dar permisos de ejecuci�n
+    # Dar permisos de ejecución
     chmod +x "/tmp/securyblack/${AGENT_NAME}"
     
-    # Verificar que el binario es v�lido
+    # Verificar que el binario es válido
     if ! file "/tmp/securyblack/${AGENT_NAME}" | grep -q "executable"; then
-      error_exit "El archivo descargado no es un binario v�lido"
+        error_exit "El archivo descargado no es un binario válido"
     fi
     
     log_success "Binario verificado correctamente"
@@ -253,9 +253,9 @@ create_user() {
     
     if ! id -u securyblack &> /dev/null; then
         if useradd -r -s /bin/false -d /nonexistent securyblack 2>/dev/null; then
-          log_success "Usuario 'securyblack' creado"
+            log_success "Usuario 'securyblack' creado"
         else
-          error_exit "No se pudo crear el usuario 'securyblack'"
+            error_exit "No se pudo crear el usuario 'securyblack'"
         fi
     else
         log_info "Usuario 'securyblack' ya existe"
@@ -266,7 +266,7 @@ create_user() {
 install_binary() {
     log_step "Instalando binario..."
     
-  # Detener servicio si est� corriendo
+    # Detener servicio si está corriendo
     if systemctl is-active --quiet "${AGENT_NAME}" 2>/dev/null; then
         log_info "Deteniendo servicio existente..."
         systemctl stop "${AGENT_NAME}"
@@ -282,40 +282,40 @@ install_binary() {
     fi
 }
 
-# Crear archivo de configuraci�n
+# Crear archivo de configuración
 create_config() {
-    log_step "Creando archivo de configuraci�n..."
+    log_step "Creando archivo de configuración..."
     
-    # Si ya existe configuraci�n, preguntar si preservar
+    # Si ya existe configuración, preguntar si preservar
     if [ -f "${CONFIG_DIR}/appsettings.json" ]; then
-        log_warning "Ya existe un archivo de configuraci�n"
-        read -p "�Deseas preservar la configuraci�n existente? [Y/n]: " -n 1 -r
-echo ""
+        log_warning "Ya existe un archivo de configuración"
+        read -p "¿Deseas preservar la configuración existente? [Y/n]: " -n 1 -r
+        echo ""
         if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-            log_info "Preservando configuraci�n existente"
-     return 0
+            log_info "Preservando configuración existente"
+            return 0
         fi
     fi
     
     # Solicitar Company Key
     echo ""
-    echo -e "${YELLOW}?????????????????????????????????????????????????????${NC}"
-    echo -e "${YELLOW}?  Necesitas tu Company Key para continuar         ?${NC}"
-    echo -e "${YELLOW}?  Obt�n la desde: dashboard.securyblack.com       ?${NC}"
-    echo -e "${YELLOW}?????????????????????????????????????????????????????${NC}"
+    echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
+    echo -e "${YELLOW}║  Necesitas tu Company Key para continuar         ║${NC}"
+    echo -e "${YELLOW}║  Obtén la desde: dashboard.securyblack.com       ║${NC}"
+    echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
     echo ""
     read -p "Ingresa tu Company Key (formato: comp_xxxxx): " COMPANY_KEY
     
     if [ -z "$COMPANY_KEY" ]; then
-      log_warning "No se proporcion� Company Key"
-        log_warning "Deber�s configurarla manualmente en ${CONFIG_DIR}/appsettings.json"
+        log_warning "No se proporcionó Company Key"
+        log_warning "Deberás configurarla manualmente en ${CONFIG_DIR}/appsettings.json"
         COMPANY_KEY=""
     else
         log_info "Company Key configurada: ${COMPANY_KEY:0:10}..."
     fi
     
-    # Crear configuraci�n - JSON corregido
-    cat > "${CONFIG_DIR}/appsettings.json" <<'EOF'
+    # Crear configuración - Sin comillas simples para permitir expansión de variables
+    cat > "${CONFIG_DIR}/appsettings.json" <<EOF
 {
   "Logging": {
     "LogLevel": {
@@ -326,7 +326,7 @@ echo ""
   },
   "Agent": {
     "ApiBaseUrl": "https://api.securyblack.com",
-    "CompanyKey": "",
+    "CompanyKey": "${COMPANY_KEY}",
     "Version": "1.0.0",
     "MetricsIntervalSeconds": 60,
     "UpdateCheckIntervalSeconds": 3600,
@@ -338,16 +338,11 @@ echo ""
   }
 }
 EOF
-
-    # Si se proporcion� Company Key, actualizar el archivo
-    if [ -n "$COMPANY_KEY" ]; then
-        sed -i "s/\"CompanyKey\": \"\"/\"CompanyKey\": \"$COMPANY_KEY\"/" "${CONFIG_DIR}/appsettings.json"
-    fi
     
     chown securyblack:securyblack "${CONFIG_DIR}/appsettings.json"
     chmod 600 "${CONFIG_DIR}/appsettings.json"
     
-    log_success "Configuraci�n creada en ${CONFIG_DIR}/appsettings.json"
+    log_success "Configuración creada en ${CONFIG_DIR}/appsettings.json"
 }
 
 # Crear servicio systemd
@@ -406,7 +401,7 @@ set_permissions() {
     chown -R securyblack:securyblack "$LOG_DIR"
     chown root:root "$INSTALL_DIR"
     chown root:root "$BIN_PATH"
-  
+    
     log_success "Permisos configurados correctamente"
 }
 
@@ -421,48 +416,48 @@ start_service() {
     sleep 3
     
     if systemctl is-active --quiet "${AGENT_NAME}"; then
-     log_success "Servicio iniciado exitosamente"
+        log_success "Servicio iniciado exitosamente"
     else
-        log_error "El servicio no est� activo"
- log_error "Ver logs con: journalctl -u ${AGENT_NAME} -n 50"
+        log_error "El servicio no está activo"
+        log_error "Ver logs con: journalctl -u ${AGENT_NAME} -n 50"
         systemctl status "${AGENT_NAME}" --no-pager || true
-        error_exit "El servicio fall� al iniciar"
+        error_exit "El servicio falló al iniciar"
     fi
 }
 
-# Mostrar informaci�n post-instalaci�n
+# Mostrar información post-instalación
 show_post_install_info() {
     echo "" | tee -a "$INSTALL_LOG"
-    echo -e "${GREEN}?????????????????????????????????????????????????????????????${NC}"
-    echo -e "${GREEN}?         ? Instalaci�n completada exitosamente!           ?${NC}"
-    echo -e "${GREEN}?????????????????????????????????????????????????????????????${NC}"
+    echo -e "${GREEN}═════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}║         ✓ Instalación completada exitosamente!           ║${NC}"
+    echo -e "${GREEN}═════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${BLUE}?? Ubicaciones importantes:${NC}"
-    echo "   � Binario:        $BIN_PATH"
-    echo "   � Configuraci�n:  ${CONFIG_DIR}/appsettings.json"
-    echo "   � Logs:           ${LOG_DIR}/"
-    echo "   � Log instalaci�n: $INSTALL_LOG"
+    echo -e "${BLUE}📁 Ubicaciones importantes:${NC}"
+    echo "   • Binario:        $BIN_PATH"
+    echo "   • Configuración:  ${CONFIG_DIR}/appsettings.json"
+    echo "   • Logs:           ${LOG_DIR}/"
+    echo "   • Log instalación: $INSTALL_LOG"
     echo ""
-    echo -e "${BLUE}?? Comandos �tiles:${NC}"
-    echo "   � Ver estado:     sudo systemctl status ${AGENT_NAME}"
-    echo "   � Ver logs:       sudo journalctl -u ${AGENT_NAME} -f"
-    echo "   � Reiniciar:      sudo systemctl restart ${AGENT_NAME}"
-    echo "   � Detener:        sudo systemctl stop ${AGENT_NAME}"
-    echo "   � Desinstalar:    curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/uninstall.sh | sudo bash"
+    echo -e "${BLUE}🔧 Comandos útiles:${NC}"
+    echo "   • Ver estado:     sudo systemctl status ${AGENT_NAME}"
+    echo "   • Ver logs:       sudo journalctl -u ${AGENT_NAME} -f"
+    echo "   • Reiniciar:      sudo systemctl restart ${AGENT_NAME}"
+    echo "   • Detener:        sudo systemctl stop ${AGENT_NAME}"
+    echo "   • Desinstalar:    curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/uninstall.sh | sudo bash"
     echo ""
-    echo -e "${YELLOW}? Pr�ximos pasos:${NC}"
-  echo "   1. El agente est� esperando aprobaci�n desde el dashboard"
-    echo "   2. Inicia sesi�n en https://dashboard.securyblack.com"
-  echo "   3. Ve a 'Servidores' ? 'Pendientes'"
-  echo "   4. Aprueba este servidor: $(hostname)"
-    echo "   5. El agente comenzar� a enviar m�tricas autom�ticamente"
+    echo -e "${YELLOW}📋 Próximos pasos:${NC}"
+    echo "   1. El agente está esperando aprobación desde el dashboard"
+    echo "   2. Inicia sesión en https://dashboard.securyblack.com"
+    echo "   3. Ve a 'Servidores' → 'Pendientes'"
+    echo "   4. Aprueba este servidor: $(hostname)"
+    echo "   5. El agente comenzará a enviar métricas automáticamente"
     echo ""
-  echo -e "${BLUE}?? Tip:${NC} Monitorea los logs mientras esperas aprobaci�n:"
+    echo -e "${BLUE}💡 Tip:${NC} Monitorea los logs mientras esperas aprobación:"
     echo "   sudo journalctl -u ${AGENT_NAME} -f"
     echo ""
 }
 
-# Funci�n principal
+# Función principal
 main() {
     print_banner
     check_root
@@ -471,17 +466,17 @@ main() {
     check_dependencies
     check_existing_installation
     download_agent
-  create_directories
-  create_user
+    create_directories
+    create_user
     install_binary
     create_config
     create_service
     set_permissions
     start_service
     show_post_install_info
- 
-    log_info "Instalaci�n completada - $(date)"
+    
+    log_info "Instalación completada - $(date)"
 }
 
-# Ejecutar instalaci�n
+# Ejecutar instalación
 main "$@"

@@ -1,18 +1,18 @@
-#!/bin/bash
+﻿#!/bin/bash
 
-# SecuryBlack Agent - Script de Desinstalaci�n
-# Uso: curl -fsSL https://install.securyblack.com/uninstall.sh | sudo bash
+# SecuryBlack Agent - Script de Desinstalación
+# Uso: curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/uninstall.sh | sudo bash
 
 set -e
 
 # Colores para output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
+YIDDEN='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# Configuraci�n
+# Configuración
 AGENT_NAME="securyblack-agent"
 INSTALL_DIR="/opt/${AGENT_NAME}"
 CONFIG_DIR="/etc/${AGENT_NAME}"
@@ -25,23 +25,23 @@ log_info() {
 }
 
 log_success() {
-    echo -e "${GREEN}[OK]${NC} $1"
+    echo -e "${GREEN}[✓]${NC} $1"
 }
 
 log_warning() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+    echo -e "${YELLOW}[⚠]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+    echo -e "${RED}[✗]${NC} $1"
 }
 
 # Banner
 print_banner() {
     echo ""
-    echo -e "${RED}?????????????????????????????????????????????${NC}"
-    echo -e "${RED}?  SecuryBlack Agent - Desinstalador       ?${NC}"
-    echo -e "${RED}?????????????????????????????????????????????${NC}"
+    echo -e "${RED}═════════════════════════════════════════${NC}"
+    echo -e "${RED}║  SecuryBlack Agent - Desinstalador       ║${NC}"
+    echo -e "${RED}═════════════════════════════════════════${NC}"
     echo ""
 }
 
@@ -54,13 +54,14 @@ check_root() {
     log_success "Ejecutando como root"
 }
 
-# Confirmar desinstalaci�n
+# Confirmar desinstalación
 confirm_uninstall() {
     echo ""
-    read -p "$(echo -e ${YELLOW}�Est�s seguro de que deseas desinstalar SecuryBlack Agent? [y/N]:${NC} )" -n 1 -r
-  echo ""
+    echo -e "${YELLOW}¿Estás seguro de que deseas desinstalar SecuryBlack Agent? [y/N]:${NC} "
+    read -r REPLY
+    echo ""
     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        log_info "Desinstalaci�n cancelada"
+        log_info "Desinstalación cancelada"
         exit 0
     fi
 }
@@ -69,11 +70,11 @@ confirm_uninstall() {
 stop_service() {
     log_info "Deteniendo servicio..."
     
-    if systemctl is-active --quiet "${AGENT_NAME}"; then
+    if systemctl is-active --quiet "${AGENT_NAME}" 2>/dev/null; then
         systemctl stop "${AGENT_NAME}"
         log_success "Servicio detenido"
     else
-        log_info "El servicio no estaba en ejecuci�n"
+        log_info "El servicio no estaba en ejecución"
     fi
 }
 
@@ -81,12 +82,12 @@ stop_service() {
 disable_service() {
     log_info "Deshabilitando servicio..."
     
-    if systemctl is-enabled --quiet "${AGENT_NAME}"; then
-systemctl disable "${AGENT_NAME}"
+    if systemctl is-enabled --quiet "${AGENT_NAME}" 2>/dev/null; then
+        systemctl disable "${AGENT_NAME}"
         log_success "Servicio deshabilitado"
     else
         log_info "El servicio no estaba habilitado"
- fi
+    fi
 }
 
 # Eliminar servicio systemd
@@ -95,7 +96,8 @@ remove_service() {
     
     if [ -f "$SERVICE_FILE" ]; then
         rm -f "$SERVICE_FILE"
-    systemctl daemon-reload
+        systemctl daemon-reload
+        systemctl reset-failed "${AGENT_NAME}" 2>/dev/null || true
         log_success "Servicio systemd eliminado"
     else
         log_info "Archivo de servicio no encontrado"
@@ -108,72 +110,76 @@ remove_files() {
     
     # Preguntar si desea conservar los logs
     echo ""
-    read -p "$(echo -e ${YELLOW}�Deseas conservar los logs? [y/N]:${NC} )" -n 1 -r
+    echo -e "${YELLOW}¿Deseas conservar los logs? [y/N]:${NC} "
+    read -r KEEP_LOGS
     echo ""
-    KEEP_LOGS=$REPLY
     
-    # Eliminar directorio de instalaci�n
+    # Eliminar directorio de instalación
     if [ -d "$INSTALL_DIR" ]; then
         rm -rf "$INSTALL_DIR"
-        log_success "Directorio de instalaci�n eliminado"
-  fi
- 
-    # Eliminar directorio de configuraci�n
-    if [ -d "$CONFIG_DIR" ]; then
-        rm -rf "$CONFIG_DIR"
-      log_success "Directorio de configuraci�n eliminado"
+        log_success "Directorio de instalación eliminado: $INSTALL_DIR"
     fi
     
-    # Eliminar logs si se solicit�
+    # Eliminar directorio de configuración
+    if [ -d "$CONFIG_DIR" ]; then
+        rm -rf "$CONFIG_DIR"
+        log_success "Directorio de configuración eliminado: $CONFIG_DIR"
+    fi
+    
+    # Eliminar logs si se solicitó
     if [[ ! $KEEP_LOGS =~ ^[Yy]$ ]] && [ -d "$LOG_DIR" ]; then
-     rm -rf "$LOG_DIR"
-        log_success "Directorio de logs eliminado"
-else
-        log_info "Logs conservados en: $LOG_DIR"
+        rm -rf "$LOG_DIR"
+        log_success "Directorio de logs eliminado: $LOG_DIR"
+    else
+        if [ -d "$LOG_DIR" ]; then
+            log_info "Logs conservados en: $LOG_DIR"
+        else
+            log_info "No se encontraron logs"
+        fi
     fi
 }
 
 # Eliminar usuario
 remove_user() {
     log_info "Eliminando usuario del sistema..."
-  
+    
     if id -u securyblack &> /dev/null; then
-        userdel securyblack
+        userdel securyblack 2>/dev/null || true
         log_success "Usuario 'securyblack' eliminado"
     else
         log_info "Usuario 'securyblack' no existe"
     fi
 }
 
-# Mostrar informaci�n post-desinstalaci�n
+# Mostrar información post-desinstalación
 show_post_uninstall_info() {
     echo ""
-    echo -e "${GREEN}?????????????????????????????????????????????????????????????${NC}"
-    echo -e "${GREEN}?        Desinstalaci�n completada exitosamente!     ?${NC}"
-    echo -e "${GREEN}?????????????????????????????????????????????????????????????${NC}"
+    echo -e "${GREEN}═════════════════════════════════════════════════${NC}"
+    echo -e "${GREEN}║        ✓ Desinstalación completada exitosamente!     ║${NC}"
+    echo -e "${GREEN}═════════════════════════════════════════════════${NC}"
     echo ""
-    echo -e "${BLUE}? El agente SecuryBlack ha sido completamente eliminado${NC}"
+    echo -e "${BLUE}🗑️  El agente SecuryBlack ha sido completamente eliminado${NC}"
     echo ""
-    echo -e "${YELLOW}Nota:${NC} El servidor todav�a aparecer� en tu dashboard."
+    echo -e "${YELLOW}📌 Nota:${NC} El servidor todavía aparecerá en tu dashboard."
     echo "   Puedes eliminarlo manualmente desde la interfaz web."
     echo ""
-    echo -e "${BLUE}Para reinstalar:${NC}"
-    echo "   curl -fsSL https://install.securyblack.com/agent.sh | sudo bash"
+    echo -e "${BLUE}🔄 Para reinstalar:${NC}"
+    echo "   curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/install.sh | sudo bash"
     echo ""
 }
 
-# Funci�n principal
+# Función principal
 main() {
     print_banner
     check_root
     confirm_uninstall
     stop_service
     disable_service
-  remove_service
+    remove_service
     remove_files
     remove_user
     show_post_uninstall_info
 }
 
-# Ejecutar desinstalaci�n
+# Ejecutar desinstalación
 main

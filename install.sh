@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # SecuryBlack Agent - Script de Instalación
 # Inspirado en Tailscale: https://tailscale.com/install
@@ -21,6 +21,8 @@ NC='\033[0m' # No Color
 AGENT_NAME="securyblack-agent"
 INSTALL_DIR="/opt/${AGENT_NAME}"
 CONFIG_DIR="/etc/${AGENT_NAME}"
+STATE_DIR="/var/lib/${AGENT_NAME}"
+DOTNET_EXTRACT_DIR="${STATE_DIR}/.net"
 LOG_DIR="/var/log/${AGENT_NAME}"
 BIN_PATH="${INSTALL_DIR}/${AGENT_NAME}"
 SERVICE_FILE="/etc/systemd/system/${AGENT_NAME}.service"
@@ -192,6 +194,31 @@ check_existing_installation() {
     fi
 }
 
+# Validar que el binario descargado sea self-contained (tamaño mínimo)
+validate_downloaded_binary() {
+    local BIN="/tmp/securyblack/${AGENT_NAME}"
+    if [ ! -f "$BIN" ]; then
+        error_exit "No se encontró el binario descargado para validar"
+    fi
+    local SIZE_BYTES=$(stat -c%s "$BIN" 2>/dev/null || stat -f%z "$BIN")
+    local SIZE_MB=$(( SIZE_BYTES / 1024 / 1024 ))
+    log_info "Tamaño del binario: ${SIZE_MB} MB"
+
+    # Umbrales conservadores para detectar stubs framework-dependent (~73 KB)
+    local MIN_MB=50
+    if [ "$ARCH" = "arm64" ]; then
+        MIN_MB=60
+    fi
+
+    if [ "$SIZE_MB" -lt "$MIN_MB" ]; then
+        log_error "El binario parece NO ser self-contained (demasiado pequeño)."
+        log_error "Descargado: ${SIZE_MB} MB, esperado >= ${MIN_MB} MB para ${ARCH}."
+        log_info "Causa probable: asset incorrecto en GitHub Release (framework-dependent)."
+        log_info "Solución: actualizar el release con el binario self-contained correcto."
+        error_exit "Abortando instalación para evitar un servicio roto."
+    fi
+}
+
 # Descargar binario desde GitHub Releases
 download_agent() {
     log_step "Descargando última versión del agente desde GitHub..."
@@ -233,6 +260,9 @@ download_agent() {
     if ! file "/tmp/securyblack/${AGENT_NAME}" | grep -q "executable"; then
         error_exit "El archivo descargado no es un binario válido"
     fi
+
+    # Validar tamaño mínimo esperado (self-contained)
+    validate_downloaded_binary
     
     log_success "Binario verificado correctamente"
 }
@@ -244,8 +274,10 @@ create_directories() {
     mkdir -p "$INSTALL_DIR" || error_exit "No se pudo crear $INSTALL_DIR"
     mkdir -p "$CONFIG_DIR" || error_exit "No se pudo crear $CONFIG_DIR"
     mkdir -p "$LOG_DIR" || error_exit "No se pudo crear $LOG_DIR"
+    mkdir -p "$STATE_DIR" || error_exit "No se pudo crear $STATE_DIR"
+    mkdir -p "$DOTNET_EXTRACT_DIR" || error_exit "No se pudo crear $DOTNET_EXTRACT_DIR"
     
-    log_success "Directorios creados: $INSTALL_DIR, $CONFIG_DIR, $LOG_DIR"
+    log_success "Directorios creados: $INSTALL_DIR, $CONFIG_DIR, $LOG_DIR, $STATE_DIR"
 }
 
 # Crear usuario para el agente
@@ -366,6 +398,7 @@ ExecStart=${BIN_PATH}
 WorkingDirectory=${INSTALL_DIR}
 Environment="DOTNET_ENVIRONMENT=Production"
 Environment="ASPNETCORE_URLS="
+Environment="DOTNET_BUNDLE_EXTRACT_BASE_DIR=${DOTNET_EXTRACT_DIR}"
 Restart=always
 RestartSec=10
 User=securyblack
@@ -381,7 +414,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=${CONFIG_DIR} ${LOG_DIR}
+ReadWritePaths=${CONFIG_DIR} ${LOG_DIR} ${STATE_DIR} ${DOTNET_EXTRACT_DIR}
 
 # Recursos
 LimitNOFILE=65535
@@ -403,6 +436,8 @@ set_permissions() {
     
     chown -R securyblack:securyblack "$CONFIG_DIR"
     chown -R securyblack:securyblack "$LOG_DIR"
+    chown -R securyblack:securyblack "$STATE_DIR"
+    chown -R securyblack:securyblack "$DOTNET_EXTRACT_DIR"
     chown root:root "$INSTALL_DIR"
     chown root:root "$BIN_PATH"
     
@@ -439,6 +474,7 @@ show_post_install_info() {
     echo -e "${BLUE}📁 Ubicaciones importantes:${NC}"
     echo "   • Binario:        $BIN_PATH"
     echo "   • Configuración:  ${CONFIG_DIR}/appsettings.json"
+    echo "   • Estado/Extract: ${DOTNET_EXTRACT_DIR}"
     echo "   • Logs:           ${LOG_DIR}/"
     echo "   • Log instalación: $INSTALL_LOG"
     echo ""

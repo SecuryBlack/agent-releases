@@ -22,6 +22,10 @@ All releases with compiled binaries are available in the [Releases](https://gith
 - x64 (Intel/AMD 64-bit)
 - arm64 (ARM 64-bit)
 
+### Requirements
+
+**No .NET runtime installation required!** The binaries are self-contained and include all necessary dependencies.
+
 ## Verification
 
 Each release includes SHA256 checksums. Verify the binary integrity:

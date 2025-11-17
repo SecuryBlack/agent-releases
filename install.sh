@@ -1,4 +1,4 @@
-﻿#!/bin/bash
+#!/bin/bash
 
 # SecuryBlack Agent - Script de Instalación
 # Inspirado en Tailscale: https://tailscale.com/install
@@ -407,12 +407,12 @@ StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=securyblack-agent
 
-# Seguridad
+# Seguridad (permitiendo auto-actualización)
 NoNewPrivileges=true
 PrivateTmp=true
-ProtectSystem=strict
+ProtectSystem=false
 ProtectHome=true
-ReadWritePaths=${CONFIG_DIR} ${LOG_DIR} ${STATE_DIR} ${DOTNET_EXTRACT_DIR}
+ReadWritePaths=${CONFIG_DIR} ${LOG_DIR} ${STATE_DIR} ${DOTNET_EXTRACT_DIR} ${INSTALL_DIR}
 
 # Recursos
 LimitNOFILE=65535

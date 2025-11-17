@@ -408,7 +408,7 @@ StandardError=journal
 SyslogIdentifier=securyblack-agent
 
 # Seguridad (permitiendo auto-actualización)
-NoNewPrivileges=true
+# NoNewPrivileges debe ser false para permitir sudo en auto-actualización
 PrivateTmp=true
 ProtectSystem=false
 ProtectHome=true

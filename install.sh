@@ -204,15 +204,13 @@ validate_downloaded_binary() {
     local SIZE_MB=$(( SIZE_BYTES / 1024 / 1024 ))
     log_info "Tamaño del binario: ${SIZE_MB} MB"
 
-    # Umbrales conservadores para detectar stubs framework-dependent (~73 KB)
-    local MIN_MB=50
-    if [ "$ARCH" = "arm64" ]; then
-        MIN_MB=60
-    fi
-
+    # Umbral reducido para detectar stubs framework-dependent (~73 KB)
+    # Los binarios self-contained comprimidos pueden ser ~30-40 MB
+    local MIN_MB=5
+    
     if [ "$SIZE_MB" -lt "$MIN_MB" ]; then
         log_error "El binario parece NO ser self-contained (demasiado pequeño)."
-        log_error "Descargado: ${SIZE_MB} MB, esperado >= ${MIN_MB} MB para ${ARCH}."
+        log_error "Descargado: ${SIZE_MB} MB, esperado >= ${MIN_MB} MB."
         log_info "Causa probable: asset incorrecto en GitHub Release (framework-dependent)."
         log_info "Solución: actualizar el release con el binario self-contained correcto."
         error_exit "Abortando instalación para evitar un servicio roto."

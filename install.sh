@@ -1,4 +1,4 @@
-#!/bin/bash
+﻿#!/bin/bash
 
 # SecuryBlack Agent - Script de Instalación
 # Inspirado en Tailscale: https://tailscale.com/install
@@ -239,7 +239,7 @@ download_agent() {
         error_exit "No se encontró el binario para arquitectura: linux-${ARCH}"
     fi
     
-    log_info "Descargando desde: $DOWNLOAD_URL"
+    log_info "Descargando binario desde: $DOWNLOAD_URL"
     
     # Crear directorio temporal
     mkdir -p /tmp/securyblack
@@ -249,6 +249,16 @@ download_agent() {
         log_success "Binario descargado exitosamente"
     else
         error_exit "Error al descargar el binario"
+    fi
+    
+    # Descargar script de verificación
+    VERIFY_SCRIPT_URL="https://raw.githubusercontent.com/SecuryBlack/SecuryBlack/main/agent-linux/verify-installation.sh"
+    log_info "Descargando script de verificación..."
+    if curl -sL -o "/tmp/securyblack/verify-installation.sh" "$VERIFY_SCRIPT_URL"; then
+        chmod +x "/tmp/securyblack/verify-installation.sh"
+        log_info "Script de verificación descargado"
+    else
+        log_warning "No se pudo descargar el script de verificación (continuando...)"
     fi
     
     # Dar permisos de ejecución
@@ -262,7 +272,7 @@ download_agent() {
     # Validar tamaño mínimo esperado (self-contained)
     validate_downloaded_binary
     
-    log_success "Binario verificado correctamente"
+    log_success "Archivos verificados correctamente"
 }
 
 # Crear directorios necesarios
@@ -311,6 +321,13 @@ install_binary() {
     else
         error_exit "No se pudo copiar el binario a $BIN_PATH"
     fi
+    
+    # Copiar script de verificación
+    if [ -f "/tmp/securyblack/verify-installation.sh" ]; then
+        cp "/tmp/securyblack/verify-installation.sh" "${INSTALL_DIR}/"
+        chmod +x "${INSTALL_DIR}/verify-installation.sh"
+        log_info "Script de verificación instalado"
+    fi
 }
 
 # Crear archivo de configuración
@@ -329,24 +346,32 @@ create_config() {
         fi
     fi
     
-    # Solicitar Company Key
-    echo ""
-    echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
-    echo -e "${YELLOW}║  Necesitas tu Company Key para continuar         ║${NC}"
-    echo -e "${YELLOW}║  Obtén la desde: dashboard.securyblack.com       ║${NC}"
-    echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
-    echo ""
-    echo -ne "Ingresa tu Company Key (formato: comp_xxxxx): "
-    read -r COMPANY_KEY </dev/tty
-    echo ""
-    
-    if [ -z "$COMPANY_KEY" ]; then
-        log_warning "No se proporcionó Company Key"
-        log_warning "Deberás configurarla manualmente en ${CONFIG_DIR}/appsettings.json"
-        COMPANY_KEY=""
-    else
-        log_info "Company Key configurada: ${COMPANY_KEY:0:10}..."
-    fi
+    # Solicitar Company Key con validación
+    while true; do
+        echo ""
+        echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
+        echo -e "${YELLOW}║  Necesitas tu Company Key para continuar         ║${NC}"
+        echo -e "${YELLOW}║  Obtén la desde: dashboard.securyblack.com       ║${NC}"
+        echo -e "${YELLOW}═════════════════════════════════════════════${NC}"
+        echo ""
+        echo -ne "Ingresa tu Company Key (formato: comp_xxxxx): "
+        read -r COMPANY_KEY </dev/tty
+        echo ""
+        
+        if [ -z "$COMPANY_KEY" ]; then
+            log_error "Company Key es requerida. No puede estar vacía."
+            continue
+        fi
+        
+        # Validar formato básico
+        if [[ ! $COMPANY_KEY =~ ^comp_[a-zA-Z0-9_-]+$ ]]; then
+            log_error "Formato de Company Key inválido. Debe comenzar con 'comp_' seguido de caracteres alfanuméricos."
+            continue
+        fi
+        
+        log_success "Company Key válida: ${COMPANY_KEY:0:10}..."
+        break
+    done
     
     # Crear configuración - Sin comillas simples para permitir expansión de variables
     cat > "${CONFIG_DIR}/appsettings.json" <<EOF
@@ -503,6 +528,7 @@ show_post_install_info() {
     echo "   • Ver logs:       sudo journalctl -u ${AGENT_NAME} -f"
     echo "   • Reiniciar:      sudo systemctl restart ${AGENT_NAME}"
     echo "   • Detener:        sudo systemctl stop ${AGENT_NAME}"
+    echo "   • Verificar:      sudo /opt/securyblack-agent/verify-installation.sh"
     echo "   • Desinstalar:    curl -fsSL https://raw.githubusercontent.com/SecuryBlack/agent-releases/main/uninstall.sh | sudo bash"
     echo ""
     echo -e "${YELLOW}📋 Próximos pasos:${NC}"
@@ -512,8 +538,8 @@ show_post_install_info() {
     echo "   4. Aprueba este servidor: $(hostname)"
     echo "   5. El agente comenzará a enviar métricas automáticamente"
     echo ""
-    echo -e "${BLUE}💡 Tip:${NC} Monitorea los logs mientras esperas aprobación:"
-    echo "   sudo journalctl -u ${AGENT_NAME} -f"
+    echo -e "${BLUE}💡 Tip:${NC} Ejecuta la verificación automática:"
+    echo "   sudo /opt/securyblack-agent/verify-installation.sh"
     echo ""
 }
 

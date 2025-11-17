@@ -439,6 +439,26 @@ set_permissions() {
     chown root:root "$INSTALL_DIR"
     chown root:root "$BIN_PATH"
     
+    # Permitir al usuario securyblack reiniciar el servicio sin sudo password
+    # Esto es necesario para auto-actualización
+    log_info "Configurando permisos sudo para auto-actualización..."
+    
+    cat > /etc/sudoers.d/securyblack-agent <<EOF
+# Permitir al usuario securyblack reiniciar el servicio para auto-actualizaciones
+securyblack ALL=(ALL) NOPASSWD: /bin/systemctl restart securyblack-agent
+securyblack ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart securyblack-agent
+EOF
+    
+    chmod 440 /etc/sudoers.d/securyblack-agent
+    
+    # Verificar que el archivo sudoers es válido
+    if visudo -c -f /etc/sudoers.d/securyblack-agent; then
+        log_success "Permisos sudo configurados correctamente"
+    else
+        log_error "Error en configuración de sudoers, eliminando archivo..."
+        rm -f /etc/sudoers.d/securyblack-agent
+    fi
+    
     log_success "Permisos configurados correctamente"
 }
 
